@@ -1,0 +1,16 @@
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+dependencies {
+    implementation project(':applications:uploader:core')
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+}
