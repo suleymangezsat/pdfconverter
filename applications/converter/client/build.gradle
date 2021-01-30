@@ -1,6 +1,7 @@
 plugins {
     id 'org.springframework.boot' version "${springBootVersion}"
 }
+
 bootJar {
     enabled = false
 }
@@ -8,6 +9,7 @@ bootJar {
 jar {
     enabled = true
 }
-
 dependencies {
+    implementation project(':applications:converter:core')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 }

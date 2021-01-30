@@ -1,0 +1,9 @@
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
+}
+
+dependencies{
+    implementation project(':applications:uploader:api')
+    implementation project(':applications:uploader:core')
+    implementation 'org.springframework.boot:spring-boot-starter'
+}

@@ -15,6 +15,11 @@ pluginManagement {
 rootProject.name = 'pdfconverter'
 include 'applications:uploader:core'
 include 'applications:uploader:storage'
+include 'applications:uploader:queue'
 include 'applications:uploader:api'
-include 'applications:converter'
+include 'applications:uploader:application'
+include 'applications:converter:core'
+include 'applications:converter:client'
+include 'applications:converter:queue'
+include 'applications:converter:application'
 

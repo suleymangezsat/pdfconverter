@@ -1,0 +1,9 @@
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
+}
+
+dependencies{
+    implementation project(':applications:converter:queue')
+    implementation project(':applications:converter:core')
+    implementation 'org.springframework.boot:spring-boot-starter'
+}

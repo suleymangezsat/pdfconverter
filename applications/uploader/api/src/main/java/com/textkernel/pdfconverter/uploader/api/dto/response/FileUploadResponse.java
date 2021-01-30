@@ -1,4 +1,4 @@
-package com.textkernel.pdfconverter.uploader.core.dto;
+package com.textkernel.pdfconverter.uploader.api.dto.response;
 
 import java.time.Instant;
 
@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class FileDto {
+public class FileUploadResponse {
 	private String id;
 
 	private String name;
@@ -17,10 +17,4 @@ public class FileDto {
 	private FileStatus status;
 
 	private String text;
-
-	private byte[] resource;
-
-	private String contentType;
-
-	private Instant createdAt;
 }
