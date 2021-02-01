@@ -1,4 +1,4 @@
-package com.textkernel.pdfconverter.converter.queue.properties;
+package com.textkernel.pdfconverter.converter.properties;
 
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -34,6 +34,16 @@ public class RabbitmqPropertiesImpl implements RabbitmqProperties {
 		return routing.getConverting();
 	}
 
+	@Override
+	public String getStatusUpdatingQueueName() {
+		return queue.getStatusUpdating();
+	}
+
+	@Override
+	public String getStatusUpdatingRouteName() {
+		return routing.getStatusUpdating();
+	}
+
 	@Getter
 	@Setter
 	public static class Exchange {
@@ -44,12 +54,14 @@ public class RabbitmqPropertiesImpl implements RabbitmqProperties {
 	@Setter
 	public static class Queue {
 		String converting;
+		String statusUpdating;
 	}
 
 	@Getter
 	@Setter
 	public static class Routing {
 		String converting;
+		String statusUpdating;
 	}
 
 

@@ -1,6 +1,6 @@
 package com.textkernel.pdfconverter.converter.core.dto;
 
-public interface FileMessage {
+public interface OriginalFile {
 	String getId();
 
 	byte[] getResource();

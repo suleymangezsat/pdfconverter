@@ -13,27 +13,27 @@ import lombok.Getter;
 @ControllerAdvice
 public class DefaultExceptionHandler {
 	@ExceptionHandler(IOException.class)
-	public ResponseEntity<Error> handleIOException(IOException e) {
+	public ResponseEntity<ErrorResponse> handleIOException(IOException e) {
 		return handleError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@ExceptionHandler(FileHandlingException.class)
-	public ResponseEntity<Error> handleFileHandlingException(IOException e) {
+	public ResponseEntity<ErrorResponse> handleFileHandlingException(FileHandlingException e) {
 		return handleError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@ExceptionHandler({Exception.class})
-	public ResponseEntity<Error> handleGenericException(Exception e) {
+	public ResponseEntity<ErrorResponse> handleGenericException(Exception e) {
 		return handleError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	private ResponseEntity<Error> handleError(String message, HttpStatus httpStatus) {
-		return new ResponseEntity<>(new Error(message, httpStatus.value()), httpStatus);
+	private ResponseEntity<ErrorResponse> handleError(String message, HttpStatus httpStatus) {
+		return new ResponseEntity<>(new ErrorResponse(message, httpStatus.value()), httpStatus);
 	}
 
 	@Getter
 	@AllArgsConstructor
-	public static class Error {
+	public static class ErrorResponse {
 		private String message;
 		private int status;
 	}

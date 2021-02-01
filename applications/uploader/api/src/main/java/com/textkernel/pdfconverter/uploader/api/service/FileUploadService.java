@@ -9,9 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.textkernel.pdfconverter.uploader.core.constant.ErrorMessage;
-import com.textkernel.pdfconverter.uploader.core.dto.FileDto;
+import com.textkernel.pdfconverter.uploader.api.constant.ErrorMessage;
+import com.textkernel.pdfconverter.uploader.api.dto.FileDto;
 import com.textkernel.pdfconverter.uploader.core.constant.FileStatus;
+import com.textkernel.pdfconverter.uploader.core.dto.File;
 import com.textkernel.pdfconverter.uploader.core.service.ProducerService;
 import com.textkernel.pdfconverter.uploader.core.service.FileStorageService;
 import com.textkernel.pdfconverter.uploader.api.exception.FileHandlingException;
@@ -28,26 +29,26 @@ public class FileUploadService {
 		this.fileQueueService = fileQueueService;
 	}
 
-	public List<FileDto> listAll() {
+	public List<File> listAll() {
 		return fileStorageService.getAll();
 	}
 
-	public FileDto upload(MultipartFile file) {
-		FileDto fileDto = createFileDto(file);
-		fileDto = fileStorageService.store(fileDto);
-		fileQueueService.sendFileToConvert(fileDto.getId(), fileDto.getResource(), fileDto.getContentType());
-		return fileDto;
+	public File upload(MultipartFile file) {
+		File uploadedFile = createFileDto(file);
+		uploadedFile = fileStorageService.store(uploadedFile);
+		fileQueueService.sendFileToConvertingQueue(uploadedFile.getId(), uploadedFile.getResource(), uploadedFile.getContentType());
+		return uploadedFile;
 	}
 
 	private FileDto createFileDto(MultipartFile file) {
-		String fileName = StringUtils.cleanPath(Optional.ofNullable(file.getOriginalFilename()).orElseThrow(() -> new FileHandlingException(ErrorMessage.FILE_NAME_ERROR)));
+		String fileName = StringUtils.cleanPath(Optional.ofNullable(file.getOriginalFilename()).orElseThrow(() -> new FileHandlingException(ErrorMessage.FILE_BLANK_NAME_ERROR)));
 		FileDto fileDto = new FileDto();
 		fileDto.setName(fileName);
 		try {
 			fileDto.setResource(file.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
-			throw new FileHandlingException(ErrorMessage.FILE_RESOLVE_ERROR);
+			throw new FileHandlingException(ErrorMessage.FILE_RESOLVING_ERROR);
 		}
 		fileDto.setStatus(FileStatus.UPLOADED);
 		fileDto.setContentType(file.getContentType());

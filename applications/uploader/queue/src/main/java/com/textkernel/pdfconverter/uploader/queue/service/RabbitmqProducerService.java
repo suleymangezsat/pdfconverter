@@ -7,31 +7,30 @@ import org.springframework.stereotype.Service;
 
 import com.textkernel.pdfconverter.uploader.core.properties.RabbitmqProperties;
 import com.textkernel.pdfconverter.uploader.core.service.ProducerService;
-import com.textkernel.pdfconverter.uploader.queue.dto.FileMessage;
+import com.textkernel.pdfconverter.uploader.queue.dto.ConvertingQueuePayload;
 
 @Service
 public class RabbitmqProducerService implements ProducerService {
-	private final RabbitTemplate template;
+	private final RabbitTemplate rabbitTemplate;
 
-	private final DirectExchange direct;
+	private final DirectExchange directExchange;
 
 	private final RabbitmqProperties rabbitmqProperties;
 
-	public RabbitmqProducerService(RabbitTemplate template, DirectExchange direct, RabbitmqProperties rabbitmqProperties) {
-		this.template = template;
-		this.direct = direct;
+	public RabbitmqProducerService(RabbitTemplate rabbitTemplate, DirectExchange directExchange, RabbitmqProperties rabbitmqProperties) {
+		this.rabbitTemplate = rabbitTemplate;
+		this.directExchange = directExchange;
 		this.rabbitmqProperties = rabbitmqProperties;
 	}
 
 	@Override
-	public void sendFileToConvert(String id, byte[] resource, String contentType) {
-		FileMessage fileMessage = createFileMessage(id, resource, contentType);
-		this.template.convertAndSend(direct.getName(), rabbitmqProperties.getConvertingRouteName(), fileMessage);
-		System.out.println(" [x] Sent '" + fileMessage.getId() + "'");
+	public void sendFileToConvertingQueue(String id, byte[] resource, String contentType) {
+		ConvertingQueuePayload fileMessage = createPayload(id, resource, contentType);
+		this.rabbitTemplate.convertAndSend(directExchange.getName(), rabbitmqProperties.getConvertingRouteName(), fileMessage);
 	}
 
-	private FileMessage createFileMessage(String id, byte[] resource, String contentType) {
-		FileMessage fileMessage = new FileMessage();
+	private ConvertingQueuePayload createPayload(String id, byte[] resource, String contentType) {
+		ConvertingQueuePayload fileMessage = new ConvertingQueuePayload();
 		fileMessage.setId(id);
 		fileMessage.setResource(resource);
 		fileMessage.setContentType(contentType);

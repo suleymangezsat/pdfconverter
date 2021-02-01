@@ -1,6 +1,7 @@
 package com.textkernel.pdfconverter.uploader.api.dto.response;
 
 import java.time.Instant;
+import java.util.List;
 
 import com.textkernel.pdfconverter.uploader.core.constant.FileStatus;
 
@@ -16,5 +17,5 @@ public class FileUploadResponse {
 
 	private FileStatus status;
 
-	private String text;
+	private List<String> textPages;
 }

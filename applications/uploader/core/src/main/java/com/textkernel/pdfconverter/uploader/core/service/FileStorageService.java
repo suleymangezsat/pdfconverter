@@ -1,11 +1,14 @@
 package com.textkernel.pdfconverter.uploader.core.service;
 
 import java.util.List;
+import java.util.Optional;
 
-import com.textkernel.pdfconverter.uploader.core.dto.FileDto;
+import com.textkernel.pdfconverter.uploader.core.dto.File;
 
 public interface FileStorageService {
-	FileDto store(FileDto file);
+	File store(File file);
 
-	List<FileDto> getAll();
+	Optional<File> get(String id);
+
+	List<File> getAll();
 }
