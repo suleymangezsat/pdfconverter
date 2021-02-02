@@ -6,4 +6,6 @@ public interface RabbitmqProperties {
 	String getConvertingRouteName();
 	String getStatusUpdatingQueueName();
 	String getStatusUpdatingRouteName();
+	int getConvertingTtl();
+	int getConvertingMaxRetryCount();
 }

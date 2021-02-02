@@ -7,18 +7,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.textkernel.pdfconverter.uploader.core.excepiton.ResourceNotFoundException;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @ControllerAdvice
 public class DefaultExceptionHandler {
-	@ExceptionHandler(IOException.class)
-	public ResponseEntity<ErrorResponse> handleIOException(IOException e) {
-		return handleError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-	}
 
 	@ExceptionHandler(FileHandlingException.class)
 	public ResponseEntity<ErrorResponse> handleFileHandlingException(FileHandlingException e) {
+		return handleError(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException e) {
+		return handleError(e.getMessage(), HttpStatus.NOT_FOUND);
+	}
+
+	@ExceptionHandler(IOException.class)
+	public ResponseEntity<ErrorResponse> handleIOException(IOException e) {
 		return handleError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 

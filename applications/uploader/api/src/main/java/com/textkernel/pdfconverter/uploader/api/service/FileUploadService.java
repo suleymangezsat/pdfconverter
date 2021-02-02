@@ -5,22 +5,24 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.textkernel.pdfconverter.uploader.api.constant.ErrorMessage;
-import com.textkernel.pdfconverter.uploader.api.dto.FileDto;
-import com.textkernel.pdfconverter.uploader.core.constant.FileStatus;
-import com.textkernel.pdfconverter.uploader.core.dto.File;
-import com.textkernel.pdfconverter.uploader.core.service.ProducerService;
-import com.textkernel.pdfconverter.uploader.core.service.FileStorageService;
+import com.textkernel.pdfconverter.uploader.api.dto.OriginalFileDto;
 import com.textkernel.pdfconverter.uploader.api.exception.FileHandlingException;
+import com.textkernel.pdfconverter.uploader.core.constant.Status;
+import com.textkernel.pdfconverter.uploader.core.dto.FileTask;
+import com.textkernel.pdfconverter.uploader.core.service.FileStorageService;
+import com.textkernel.pdfconverter.uploader.core.service.ProducerService;
 
 
 @Service
 public class FileUploadService {
-
+	private static final Logger logger = LoggerFactory.getLogger(FileUploadService.class);
 	private final FileStorageService fileStorageService;
 	private final ProducerService fileQueueService;
 
@@ -29,30 +31,23 @@ public class FileUploadService {
 		this.fileQueueService = fileQueueService;
 	}
 
-	public List<File> listAll() {
+	public List<FileTask> listAll() {
 		return fileStorageService.getAll();
 	}
 
-	public File upload(MultipartFile file) {
-		File uploadedFile = createFileDto(file);
-		uploadedFile = fileStorageService.store(uploadedFile);
-		fileQueueService.sendFileToConvertingQueue(uploadedFile.getId(), uploadedFile.getResource(), uploadedFile.getContentType());
-		return uploadedFile;
-	}
-
-	private FileDto createFileDto(MultipartFile file) {
+	public FileTask upload(MultipartFile file) {
 		String fileName = StringUtils.cleanPath(Optional.ofNullable(file.getOriginalFilename()).orElseThrow(() -> new FileHandlingException(ErrorMessage.FILE_BLANK_NAME_ERROR)));
-		FileDto fileDto = new FileDto();
-		fileDto.setName(fileName);
+		OriginalFileDto originalFile;
 		try {
-			fileDto.setResource(file.getBytes());
+			originalFile = new OriginalFileDto(fileName, file.getBytes(), file.getContentType());
 		} catch (IOException e) {
-			e.printStackTrace();
 			throw new FileHandlingException(ErrorMessage.FILE_RESOLVING_ERROR);
 		}
-		fileDto.setStatus(FileStatus.UPLOADED);
-		fileDto.setContentType(file.getContentType());
-		fileDto.setCreatedAt(Instant.now());
-		return fileDto;
+
+		FileTask uploadedFile = fileStorageService.create(originalFile, Status.INIT);
+
+		logger.info("Stored file successfully : {}", uploadedFile.getId());
+		fileQueueService.sendFileToConvertingQueue(uploadedFile.getId(), uploadedFile.getOriginalFile().getResource(), uploadedFile.getOriginalFile().getContentType());
+		return uploadedFile;
 	}
 }

@@ -14,8 +14,9 @@ import lombok.Setter;
 @ConfigurationProperties("rabbitmq")
 public class RabbitmqPropertiesImpl implements RabbitmqProperties {
 	private Exchange exchange = new Exchange();
-	private Queue queue = new Queue();
-	private Routing routing = new Routing();
+	private Task<String> queue = new Task<>();
+	private Task<String> routing = new Task<>();
+	private Task<Integer> ttl = new Task<>();
 
 	@Override
 	public String getDirectExchangeName() {
@@ -42,6 +43,11 @@ public class RabbitmqPropertiesImpl implements RabbitmqProperties {
 		return routing.getStatusUpdating();
 	}
 
+	@Override
+	public int getConvertingTtl() {
+		return ttl.getConverting();
+	}
+
 	@Getter
 	@Setter
 	public static class Exchange {
@@ -50,17 +56,8 @@ public class RabbitmqPropertiesImpl implements RabbitmqProperties {
 
 	@Getter
 	@Setter
-	public static class Queue {
-		String converting;
-		String statusUpdating;
+	public static class Task<T> {
+		T converting;
+		T statusUpdating;
 	}
-
-	@Getter
-	@Setter
-	public static class Routing {
-		String converting;
-		String statusUpdating;
-	}
-
-
 }

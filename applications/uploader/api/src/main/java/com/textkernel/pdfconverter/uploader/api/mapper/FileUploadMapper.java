@@ -1,16 +1,17 @@
 package com.textkernel.pdfconverter.uploader.api.mapper;
 
 import com.textkernel.pdfconverter.uploader.api.dto.response.FileUploadResponse;
-import com.textkernel.pdfconverter.uploader.core.dto.File;
+import com.textkernel.pdfconverter.uploader.core.dto.FileTask;
 
 public class FileUploadMapper {
 
-	public static FileUploadResponse mapToFileUploadResponse(File file){
+	public static FileUploadResponse mapToFileUploadResponse(FileTask file) {
 		FileUploadResponse response = new FileUploadResponse();
 		response.setId(file.getId());
-		response.setName(file.getName());
 		response.setStatus(file.getStatus());
-		response.setTextPages(file.getTextPages());
+		response.setMessage(file.getMessage());
+		response.setConvertingResult(file.getConvertingResult());
+		response.setCreatedAt(file.getCreatedAt());
 		return response;
 	}
 }

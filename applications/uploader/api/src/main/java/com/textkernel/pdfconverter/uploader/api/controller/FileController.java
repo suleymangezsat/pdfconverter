@@ -23,12 +23,14 @@ public class FileController {
 		this.fileUploadService = fileUploadService;
 	}
 
-	@GetMapping("/list")
+	@GetMapping
 	public List<FileUploadResponse> listUploadedFiles() {
-		return fileUploadService.listAll().stream().map(FileUploadMapper::mapToFileUploadResponse).collect(Collectors.toList());
+		return fileUploadService.listAll().stream()
+				.map(FileUploadMapper::mapToFileUploadResponse)
+				.collect(Collectors.toList());
 	}
 
-	@PostMapping("/upload")
+	@PostMapping
 	public FileUploadResponse uploadFile(@RequestParam("file") MultipartFile file) {
 		return FileUploadMapper.mapToFileUploadResponse(fileUploadService.upload(file));
 	}

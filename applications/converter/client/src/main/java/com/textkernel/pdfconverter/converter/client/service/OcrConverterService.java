@@ -7,16 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.textkernel.pdfconverter.converter.client.mapper.OcrMapper;
 import com.textkernel.pdfconverter.converter.client.model.OcrParsingResponse;
 import com.textkernel.pdfconverter.converter.client.properties.OcrProperties;
 import com.textkernel.pdfconverter.converter.client.util.FileUtil;
+import com.textkernel.pdfconverter.converter.core.dto.Convertable;
 import com.textkernel.pdfconverter.converter.core.dto.ConvertingResult;
-import com.textkernel.pdfconverter.converter.core.dto.OriginalFile;
 import com.textkernel.pdfconverter.converter.core.service.ConverterService;
 
 @Service
@@ -33,12 +31,12 @@ public class OcrConverterService implements ConverterService {
 	}
 
 	@Override
-	public ConvertingResult convert(OriginalFile file) {
+	public ConvertingResult convert(Convertable file) {
 		OcrParsingResponse response = fetchOcrApi(file);
 		return OcrMapper.mapToConvertingResult(response);
 	}
 
-	private OcrParsingResponse fetchOcrApi(OriginalFile file) {
+	private OcrParsingResponse fetchOcrApi(Convertable file) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		headers.set(API_KEY_FIELD, ocrProperties.getApikey());

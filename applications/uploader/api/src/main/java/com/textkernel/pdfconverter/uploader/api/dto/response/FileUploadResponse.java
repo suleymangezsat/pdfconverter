@@ -1,9 +1,9 @@
 package com.textkernel.pdfconverter.uploader.api.dto.response;
 
 import java.time.Instant;
-import java.util.List;
 
-import com.textkernel.pdfconverter.uploader.core.constant.FileStatus;
+import com.textkernel.pdfconverter.uploader.core.constant.Status;
+import com.textkernel.pdfconverter.uploader.core.dto.ConvertingResult;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,9 +13,11 @@ import lombok.Setter;
 public class FileUploadResponse {
 	private String id;
 
-	private String name;
+	private Status status;
 
-	private FileStatus status;
+	private String message;
 
-	private List<String> textPages;
+	private ConvertingResult convertingResult;
+
+	private Instant createdAt;
 }

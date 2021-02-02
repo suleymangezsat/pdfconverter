@@ -3,12 +3,15 @@ package com.textkernel.pdfconverter.uploader.core.service;
 import java.util.List;
 import java.util.Optional;
 
-import com.textkernel.pdfconverter.uploader.core.dto.File;
+import com.textkernel.pdfconverter.uploader.core.constant.Status;
+import com.textkernel.pdfconverter.uploader.core.dto.ConvertingResult;
+import com.textkernel.pdfconverter.uploader.core.dto.FileTask;
+import com.textkernel.pdfconverter.uploader.core.dto.OriginalFile;
 
 public interface FileStorageService {
-	File store(File file);
+	FileTask create(OriginalFile originalFile, Status status);
 
-	Optional<File> get(String id);
+	void update(String id, Status status, ConvertingResult convertingResult, String message);
 
-	List<File> getAll();
+	List<FileTask> getAll();
 }
