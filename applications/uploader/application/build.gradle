@@ -5,5 +5,7 @@ plugins {
 dependencies{
     implementation project(':applications:uploader:api')
     implementation project(':applications:uploader:core')
+    implementation project(':applications:uploader:storage')
+    implementation project(':applications:uploader:queue')
     implementation 'org.springframework.boot:spring-boot-starter'
 }

@@ -10,8 +10,11 @@ jar {
 }
 dependencies {
     implementation project(':applications:uploader:core')
-    implementation project(':applications:uploader:storage')
-    implementation project(':applications:uploader:queue')
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock:2.2.2.RELEASE'
 }

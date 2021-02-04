@@ -29,7 +29,9 @@ public class BindingConfiguration {
 	}
 
 	@Bean
-	public Binding bindingToConvertingDL(DirectExchange directExchange, Queue convertingDLQueue, RabbitmqProperties rabbitmqProperties) {
-		return BindingBuilder.bind(convertingDLQueue).to(directExchange).with(convertingDLQueue.getName());
+	public Binding bindingToConvertingDL(DirectExchange directExchange, Queue convertingDLQueue) {
+		return BindingBuilder.bind(convertingDLQueue)
+				.to(directExchange)
+				.with(convertingDLQueue.getName());
 	}
 }

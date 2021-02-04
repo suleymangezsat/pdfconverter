@@ -12,5 +12,4 @@ public class ExchangeConfiguration {
 	public DirectExchange directExchange(RabbitmqProperties rabbitmqProperties) {
 		return new DirectExchange(rabbitmqProperties.getDirectExchangeName());
 	}
-
 }
