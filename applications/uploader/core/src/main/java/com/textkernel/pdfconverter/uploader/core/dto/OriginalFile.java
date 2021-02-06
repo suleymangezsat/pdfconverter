@@ -5,6 +5,8 @@ public interface OriginalFile {
 
 	byte[] getResource();
 
+	long getSize();
+
 	String getContentType();
 }
 

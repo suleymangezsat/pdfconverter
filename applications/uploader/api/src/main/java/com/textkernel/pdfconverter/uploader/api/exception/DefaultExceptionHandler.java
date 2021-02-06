@@ -20,6 +20,12 @@ public class DefaultExceptionHandler {
 		return handleError(e.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(FileValidationException.class)
+	public ResponseEntity<ErrorResponse> handleFileValidationException(FileValidationException e) {
+		return handleError(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
+
+
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException e) {
 		return handleError(e.getMessage(), HttpStatus.NOT_FOUND);

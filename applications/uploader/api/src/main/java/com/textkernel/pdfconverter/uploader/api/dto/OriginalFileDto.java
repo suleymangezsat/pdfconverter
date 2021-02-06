@@ -1,5 +1,6 @@
 package com.textkernel.pdfconverter.uploader.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.textkernel.pdfconverter.uploader.core.dto.OriginalFile;
 
 import lombok.AllArgsConstructor;
@@ -15,7 +16,10 @@ public class OriginalFileDto implements OriginalFile {
 
 	private String name;
 
+	@JsonIgnore
 	private byte[] resource;
+
+	private long size;
 
 	private String contentType;
 }

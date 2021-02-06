@@ -11,6 +11,7 @@ public class FileUploadMapper {
 		response.setStatus(file.getStatus());
 		response.setMessage(file.getMessage());
 		response.setConvertingResult(file.getConvertingResult());
+		response.setOriginalFile(file.getOriginalFile());
 		response.setCreatedAt(file.getCreatedAt());
 		return response;
 	}

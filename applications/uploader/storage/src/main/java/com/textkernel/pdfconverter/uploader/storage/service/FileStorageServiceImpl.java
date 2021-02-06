@@ -1,8 +1,10 @@
 package com.textkernel.pdfconverter.uploader.storage.service;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.springframework.stereotype.Service;
 
@@ -24,12 +26,11 @@ public class FileStorageServiceImpl implements FileStorageService {
 	}
 
 	@Override
-	public FileTask create(OriginalFile originalFile, Status status) {
-		FileTaskEntity entity = new FileTaskEntity();
-		entity.setOriginalFile(originalFile);
-		entity.setStatus(status);
-		entity.setCreatedAt(Instant.now());
-		return fileRepository.save(entity);
+	public List<FileTask> create(List<OriginalFile> originalFiles, Status status) {
+		List<FileTaskEntity> fileTaskEntities = originalFiles.stream().map(file->createEntity(file,status)).collect(Collectors.toList());
+		return fileRepository.saveAll(fileTaskEntities).stream()
+				.map(fileEntity -> (FileTask) fileEntity)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -42,9 +43,24 @@ public class FileStorageServiceImpl implements FileStorageService {
 	}
 
 	@Override
+	public List<FileTask> get(List<String> ids) {
+		return StreamSupport
+				.stream(fileRepository.findAllById(ids).spliterator(), false)
+				.collect(Collectors.toList());
+	}
+
+	@Override
 	public List<FileTask> getAll() {
 		return fileRepository.findAll().stream()
 				.map(fileEntity -> (FileTask) fileEntity)
 				.collect(Collectors.toList());
+	}
+
+	private FileTaskEntity createEntity(OriginalFile originalFile, Status status){
+		FileTaskEntity entity = new FileTaskEntity();
+		entity.setOriginalFile(originalFile);
+		entity.setStatus(status);
+		entity.setCreatedAt(Instant.now());
+		return entity;
 	}
 }

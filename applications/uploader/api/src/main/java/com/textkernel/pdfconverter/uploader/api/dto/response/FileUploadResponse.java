@@ -2,8 +2,10 @@ package com.textkernel.pdfconverter.uploader.api.dto.response;
 
 import java.time.Instant;
 
+import com.textkernel.pdfconverter.uploader.api.dto.OriginalFileDto;
 import com.textkernel.pdfconverter.uploader.core.constant.Status;
 import com.textkernel.pdfconverter.uploader.core.dto.ConvertingResult;
+import com.textkernel.pdfconverter.uploader.core.dto.OriginalFile;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +18,8 @@ public class FileUploadResponse {
 	private Status status;
 
 	private String message;
+
+	private OriginalFile originalFile;
 
 	private ConvertingResult convertingResult;
 
