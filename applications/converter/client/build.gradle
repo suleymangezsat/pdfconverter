@@ -12,4 +12,7 @@ jar {
 dependencies {
     implementation project(':applications:converter:core')
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "org.springframework.cloud:spring-cloud-contract-wiremock:2.2.2.RELEASE"
 }

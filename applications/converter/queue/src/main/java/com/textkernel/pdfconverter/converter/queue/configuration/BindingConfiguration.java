@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Configuration;
 
 import com.textkernel.pdfconverter.converter.core.properties.RabbitmqProperties;
 
+/**
+ * Configures RabbitMQ bindings
+ */
 @Configuration
 public class BindingConfiguration {
 	@Bean
@@ -28,7 +31,7 @@ public class BindingConfiguration {
 	}
 
 	@Bean
-	public Binding bindingToConvertingDL(DirectExchange directExchange, Queue convertingDLQueue, RabbitmqProperties rabbitmqProperties) {
+	public Binding bindingToConvertingDL(DirectExchange directExchange, Queue convertingDLQueue) {
 		return BindingBuilder.bind(convertingDLQueue).to(directExchange).with(convertingDLQueue.getName());
 	}
 }

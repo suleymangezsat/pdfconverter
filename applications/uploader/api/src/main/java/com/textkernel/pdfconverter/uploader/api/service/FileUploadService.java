@@ -1,28 +1,23 @@
 package com.textkernel.pdfconverter.uploader.api.service;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.textkernel.pdfconverter.uploader.api.constant.ErrorMessage;
-import com.textkernel.pdfconverter.uploader.api.dto.OriginalFileDto;
-import com.textkernel.pdfconverter.uploader.api.exception.FileHandlingException;
-import com.textkernel.pdfconverter.uploader.api.exception.FileValidationException;
+import com.textkernel.pdfconverter.uploader.api.mapper.OriginalFileMapper;
 import com.textkernel.pdfconverter.uploader.core.constant.Status;
 import com.textkernel.pdfconverter.uploader.core.dto.FileTask;
 import com.textkernel.pdfconverter.uploader.core.dto.OriginalFile;
 import com.textkernel.pdfconverter.uploader.core.service.FileStorageService;
 import com.textkernel.pdfconverter.uploader.core.service.ProducerService;
 
-
+/**
+ * Service that is responsible for file operations
+ */
 @Service
 public class FileUploadService {
 	private static final Logger logger = LoggerFactory.getLogger(FileUploadService.class);
@@ -34,35 +29,50 @@ public class FileUploadService {
 		this.fileQueueService = fileQueueService;
 	}
 
+	/**
+	 * @return all tasks from storage service
+	 */
 	public List<FileTask> listAll() {
 		return fileStorageService.getAll();
 	}
 
-	public List<FileTask> list(String[] ids) {
-		return fileStorageService.get(Arrays.asList(ids));
+	/**
+	 * @param ids
+	 * 		ID of the tasks that will be fetched from database
+	 * @return tasks with requested IDs
+	 */
+	public List<FileTask> list(List<String> ids) {
+		return fileStorageService.get(ids);
 	}
 
-	public List<FileTask> upload(MultipartFile[] files) {
-		List<OriginalFile> originalFiles = createOriginalFiles(files);
+	/**
+	 * @param id
+	 * 		ID of the task to be fetched from database
+	 * @return task with requested ID
+	 */
+	public FileTask get(String id) {
+		return fileStorageService.get(id);
+	}
+
+	/**
+	 * Creates a record in database with INIT status and creates a RabbitMQ message to convert file asynchronously
+	 *
+	 * @param files
+	 * 		input files to be converted
+	 * @return data about created database records
+	 */
+	public List<FileTask> upload(List<MultipartFile> files) {
+		List<OriginalFile> originalFiles = files.stream()
+				.map(OriginalFileMapper::mapToOriginalFile)
+				.collect(Collectors.toList());
 		List<FileTask> uploadedFiles = fileStorageService.create(originalFiles, Status.INIT);
 
 		logger.info("Stored files successfully");
-		uploadedFiles.forEach(uploadedFile -> fileQueueService.sendFileToConvertingQueue(uploadedFile.getId(), uploadedFile.getOriginalFile().getResource(), uploadedFile.getOriginalFile().getContentType()));
+		uploadedFiles.forEach(uploadedFile ->
+				fileQueueService.sendFileToConvertingQueue(uploadedFile.getId(), uploadedFile.getOriginalFile().getResource(), uploadedFile.getOriginalFile().getContentType())
+		);
 		return uploadedFiles;
 	}
 
-	private List<OriginalFile> createOriginalFiles(MultipartFile[] files) {
-		return Arrays.stream(files).map(this::mapToOriginalFile).collect(Collectors.toList());
-	}
 
-	private OriginalFile mapToOriginalFile(MultipartFile file) {
-		String fileName = StringUtils.cleanPath(Optional.ofNullable(file.getOriginalFilename()).orElseThrow(() -> new FileHandlingException(ErrorMessage.FILE_BLANK_NAME_ERROR)));
-		OriginalFileDto originalFile;
-		try {
-			originalFile = new OriginalFileDto(fileName, file.getBytes(), file.getSize(), file.getContentType());
-		} catch (IOException e) {
-			throw new FileHandlingException(ErrorMessage.FILE_RESOLVING_ERROR);
-		}
-		return originalFile;
-	}
 }

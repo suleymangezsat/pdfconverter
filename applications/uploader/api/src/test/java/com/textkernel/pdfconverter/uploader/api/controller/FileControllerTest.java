@@ -1,8 +1,6 @@
 package com.textkernel.pdfconverter.uploader.api.controller;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -12,7 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,20 +27,23 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.util.NestedServletException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.textkernel.pdfconverter.uploader.api.configuration.MessageConverterConfiguration;
 import com.textkernel.pdfconverter.uploader.api.constant.ErrorMessage;
-import com.textkernel.pdfconverter.uploader.api.dto.response.FileUploadResponse;
-import com.textkernel.pdfconverter.uploader.api.exception.FileHandlingException;
+import com.textkernel.pdfconverter.uploader.api.dto.FileTaskDto;
+import com.textkernel.pdfconverter.uploader.api.dto.FileValidationResult;
+import com.textkernel.pdfconverter.uploader.api.dto.response.GetFileTasksResponse;
+import com.textkernel.pdfconverter.uploader.api.dto.response.UploadFilesResponse;
+import com.textkernel.pdfconverter.uploader.api.mapper.FileErrorMapper;
+import com.textkernel.pdfconverter.uploader.api.mapper.FileTaskMapper;
 import com.textkernel.pdfconverter.uploader.api.service.FileUploadService;
-import com.textkernel.pdfconverter.uploader.core.constant.ConvertingStatus;
+import com.textkernel.pdfconverter.uploader.api.validation.FileValidator;
 import com.textkernel.pdfconverter.uploader.core.constant.Status;
-import com.textkernel.pdfconverter.uploader.core.dto.ConvertingResult;
 import com.textkernel.pdfconverter.uploader.core.dto.FileTask;
+import com.textkernel.pdfconverter.uploader.core.properties.FileProperties;
 
-@SpringBootTest(classes = {FileController.class, MessageConverterConfiguration.class})
+@SpringBootTest(classes = {FileController.class, FileValidator.class, MessageConverterConfiguration.class})
 @AutoConfigureMockMvc
 @AutoConfigureWebMvc
 class FileControllerTest {
@@ -54,11 +57,17 @@ class FileControllerTest {
 	@MockBean
 	private FileUploadService fileUploadService;
 
+	@MockBean
+	private FileProperties fileProperties;
+
 	private AutoCloseable closeable;
 
 	@BeforeEach
 	void setup() {
 		closeable = MockitoAnnotations.openMocks(this);
+
+		when(fileProperties.getMaxFileCount()).thenReturn(3);
+		when(fileProperties.getMaxFileSize()).thenReturn(2_048_000L);
 	}
 
 	@AfterEach
@@ -67,106 +76,96 @@ class FileControllerTest {
 	}
 
 	@Test
-	void listUploadedFiles_List() throws Exception {
+	void listAllFileTasks_List() throws Exception {
 		Instant createdAt = Instant.now();
-		FileTask initTask = mockFileTask(createdAt, "111", Status.INIT, null, null);
-		FileTask successTask = mockFileTask(createdAt, "222", Status.SUCCESS, null, List.of("line1", "line2"));
-		FileTask failTask = mockFileTask(createdAt, "333", Status.FAILED, "ooppss", null);
+		FileTask initTask = mockFileTask(createdAt, "111", Status.INIT, null);
+		FileTask successTask = mockFileTask(createdAt, "222", Status.SUCCESS, null);
+		FileTask failTask = mockFileTask(createdAt, "333", Status.FAILED, "ooppss");
 
-		FileUploadResponse initResponse = generateFileUploadResponse(createdAt, "111", Status.INIT, null, null);
-		FileUploadResponse successResponse = generateFileUploadResponse(createdAt, "222", Status.SUCCESS, null, List.of("line1", "line2"));
-		FileUploadResponse failResponse = generateFileUploadResponse(createdAt, "333", Status.FAILED, "ooppss", null);
 
 		when(fileUploadService.listAll()).thenReturn(List.of(initTask, successTask, failTask));
 
-		mockMvc.perform(get("/file")
+		GetFileTasksResponse expected = generateGetFileTasksResponse(initTask, successTask, failTask);
+		mockMvc.perform(get("/file/all")
 				.contentType(APPLICATION_JSON_VALUE))
 				.andExpect(status().isOk())
-				.andExpect(content().json(mapper.writeValueAsString(List.of(initResponse, successResponse, failResponse))));
+				.andExpect(content().json(mapper.writeValueAsString(expected)));
 	}
 
 	@Test
-	void listUploadedFiles_Empty() throws Exception {
+	void listAllFileTasks_Empty() throws Exception {
 		when(fileUploadService.listAll()).thenReturn(List.of());
 
-		mockMvc.perform(get("/file")
+		mockMvc.perform(get("/file/all")
 				.contentType(APPLICATION_JSON_VALUE))
 				.andExpect(status().isOk())
-				.andExpect(content().string("[]"));
+				.andExpect(content().json(mapper.writeValueAsString(new GetFileTasksResponse(List.of()))));
 	}
 
 	@Test
-	void uploadFile_Success() throws Exception {
-		MockMultipartFile file = new MockMultipartFile("file", "filename.pdf", MediaType.APPLICATION_PDF_VALUE, "some pdf".getBytes());
+	void listFileTasks_List() throws Exception {
+		Instant createdAt = Instant.now();
+		FileTask initTask = mockFileTask(createdAt, "111", Status.INIT, null);
+		FileTask successTask = mockFileTask(createdAt, "222", Status.SUCCESS, null);
+
+
+		when(fileUploadService.list(eq(List.of("111", "222", "333")))).thenReturn(List.of(initTask, successTask));
+
+		GetFileTasksResponse expected = generateGetFileTasksResponse(initTask, successTask);
+		mockMvc.perform(get("/file")
+				.queryParam("ids", "111", "222", "333")
+				.contentType(APPLICATION_JSON_VALUE))
+				.andExpect(status().isOk())
+				.andExpect(content().json(mapper.writeValueAsString(expected)));
+	}
+
+	@Test
+	void listFileTasks_Empty() throws Exception {
+		when(fileUploadService.list(any())).thenReturn(List.of());
+
+		mockMvc.perform(get("/file")
+				.queryParam("ids", "111", "222", "333")
+				.contentType(APPLICATION_JSON_VALUE))
+				.andExpect(status().isOk())
+				.andExpect(content().json(mapper.writeValueAsString(new GetFileTasksResponse(List.of()))));
+	}
+
+	@Test
+	void uploadFiles_SuccessAndError() throws Exception {
+		MockMultipartFile success = new MockMultipartFile("file", "filename.pdf", MediaType.APPLICATION_PDF_VALUE, "some pdf".getBytes());
+		MockMultipartFile error = new MockMultipartFile("file", "filename.pdf", MediaType.TEXT_PLAIN_VALUE, "some pdf".getBytes());
 
 		Instant createdAt = Instant.now();
-		FileTask fileTask = mockFileTask(createdAt, "111", Status.INIT, null, null);
-		when(fileUploadService.upload(eq(file))).thenReturn(fileTask);
+		FileTask fileTask = mockFileTask(createdAt, "111", Status.INIT, null);
 
-		FileUploadResponse expected = generateFileUploadResponse(createdAt, "111", Status.INIT, null, null);
+		when(fileUploadService.upload(eq(List.of(success)))).thenReturn(List.of(fileTask));
+
+		UploadFilesResponse expected = new UploadFilesResponse();
+		expected.setData(List.of(FileTaskMapper.mapToFileTaskOverview(fileTask)));
+		expected.setErrors(List.of(FileErrorMapper.mapToFileError(new FileValidationResult(error, List.of(ErrorMessage.INVALID_CONTENT_TYPE)))));
 
 		mockMvc.perform(multipart("/file")
-				.file(file))
+				.file(success)
+				.file(error))
 				.andExpect(status().isOk())
 				.andExpect(content().string(mapper.writeValueAsString(expected)));
 	}
 
-	@Test
-	void uploadFile_FileHandlingException() {
-		MockMultipartFile file = new MockMultipartFile("file", "filename.pdf", MediaType.APPLICATION_PDF_VALUE, "some pdf".getBytes());
+	private GetFileTasksResponse generateGetFileTasksResponse(FileTask... tasks) {
+		List<FileTaskDto> dtos = Arrays.stream(tasks)
+				.map(FileTaskMapper::mapToFileTaskDetail)
+				.collect(Collectors.toList());
 
-		when(fileUploadService.upload(eq(file))).thenThrow(new FileHandlingException(ErrorMessage.FILE_BLANK_NAME_ERROR));
-
-		NestedServletException exception = assertThrows(NestedServletException.class,
-				() -> mockMvc.perform(multipart("/file")
-						.file(file))
-						.andExpect(status().is4xxClientError()));
-		assertTrue(exception.getCause() instanceof FileHandlingException);
-		assertEquals(ErrorMessage.FILE_BLANK_NAME_ERROR, exception.getCause().getMessage());
-
+		return new GetFileTasksResponse(dtos);
 	}
 
-	private FileUploadResponse generateFileUploadResponse(Instant createdAt, String id, Status status, String message, List<String> resultPages) {
-		ConvertingResult convertingResult = generateConvertingResult(resultPages);
-
-		FileUploadResponse response = new FileUploadResponse();
-		response.setCreatedAt(createdAt);
-		response.setConvertingResult(convertingResult);
-		response.setMessage(message);
-		response.setId(id);
-		response.setStatus(status);
-		return response;
-	}
-
-	private FileTask mockFileTask(Instant createdAt, String id, Status status, String message, List<String> resultPages) {
-		ConvertingResult convertingResult = generateConvertingResult(resultPages);
-
+	private FileTask mockFileTask(Instant createdAt, String id, Status status, String message) {
 		FileTask fileTask = Mockito.mock(FileTask.class);
 		when(fileTask.getId()).thenReturn(id);
 		when(fileTask.getCreatedAt()).thenReturn(createdAt);
 		when(fileTask.getStatus()).thenReturn(status);
 		when(fileTask.getMessage()).thenReturn(message);
-		when(fileTask.getConvertingResult()).thenReturn(convertingResult);
 
 		return fileTask;
-	}
-
-	private ConvertingResult generateConvertingResult(List<String> resultPages) {
-		return new ConvertingResult() {
-			@Override
-			public List<String> getTextPages() {
-				return resultPages;
-			}
-
-			@Override
-			public ConvertingStatus getStatus() {
-				return null;
-			}
-
-			@Override
-			public List<String> getErrorMessages() {
-				return null;
-			}
-		};
 	}
 }

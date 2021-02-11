@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import com.textkernel.pdfconverter.uploader.core.service.FileStorageService;
 import com.textkernel.pdfconverter.uploader.queue.dto.StatusUpdatingPayload;
 
+/**
+ * RabbitMQ consumer service responsible for updating database records asynchronously.
+ */
 @Service
 public class StatusUpdatingConsumerService {
 	private static final Logger logger = LoggerFactory.getLogger(ConvertingProducerService.class);
@@ -18,6 +21,12 @@ public class StatusUpdatingConsumerService {
 		this.fileStorageService = fileStorageService;
 	}
 
+	/**
+	 * Updates status, convertingResult and message of stored taks with given id
+	 *
+	 * @param payload
+	 * 		message payload containing data about updating the document
+	 */
 	@RabbitListener(queues = "#{statusUpdatingQueue.name}")
 	public void receiveFilesToUpdateStatus(@Payload StatusUpdatingPayload payload) {
 		logger.info("Status update consumer received a message: {}", payload.getId());

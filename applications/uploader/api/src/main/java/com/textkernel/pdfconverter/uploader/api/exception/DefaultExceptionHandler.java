@@ -12,6 +12,12 @@ import com.textkernel.pdfconverter.uploader.core.excepiton.ResourceNotFoundExcep
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+
+/**
+ * Class for exception handling. The class catches all custom exceptions and also the generic {@link Exception} class in case of unexpected error occurred.
+ *
+ * All exceptions are wrapped to {@link ErrorResponse} class for standardization.
+ */
 @ControllerAdvice
 public class DefaultExceptionHandler {
 

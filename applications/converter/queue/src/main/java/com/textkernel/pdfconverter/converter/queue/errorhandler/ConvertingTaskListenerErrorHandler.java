@@ -18,6 +18,9 @@ import com.textkernel.pdfconverter.converter.core.service.ProducerService;
 import com.textkernel.pdfconverter.converter.queue.dto.ConvertingPayload;
 import com.textkernel.pdfconverter.converter.queue.dto.StatusUpdatingPayload;
 
+/**
+ * Handles RabbitMQ consumption errors
+ */
 @Component
 public class ConvertingTaskListenerErrorHandler implements RabbitListenerErrorHandler {
 	private static final Logger logger = LoggerFactory.getLogger(ConvertingTaskListenerErrorHandler.class);
@@ -30,6 +33,17 @@ public class ConvertingTaskListenerErrorHandler implements RabbitListenerErrorHa
 		this.producerService = producerService;
 	}
 
+	/**
+	 * Handle queue consumtion error
+	 *
+	 * @param amqpMessage
+	 * 		the raw message received.
+	 * @param message
+	 * 		the converted message which contains {@link ConvertingPayload} in payload
+	 * @param exception
+	 * 		the exception the listener threw, wrapped in a
+	 * @return object to be forwarded to next queue, if consumer method is annotated with {@link org.springframework.messaging.handler.annotation.SendTo}
+	 */
 	@Override
 	public Object handleError(Message amqpMessage, org.springframework.messaging.Message<?> message, ListenerExecutionFailedException exception) {
 		int retries = getRetries(message.getHeaders());
@@ -39,7 +53,7 @@ public class ConvertingTaskListenerErrorHandler implements RabbitListenerErrorHa
 		statusUpdatingPayload.setId(convertingPayload.getId());
 
 		logger.warn("Current retry count : {}, Max retry : {}", retries, rabbitmqProperties.getConvertingMaxRetryCount());
-		if (exception.getCause() instanceof FatalException || retries == rabbitmqProperties.getConvertingMaxRetryCount()) {
+		if (exception.getCause() instanceof FatalException || retries >= rabbitmqProperties.getConvertingMaxRetryCount()) {
 			statusUpdatingPayload.setStatus(Status.FAILED);
 			statusUpdatingPayload.setMessage(exception.getCause().getMessage());
 			logger.warn("Failed converting task with message: {}", statusUpdatingPayload.getMessage());

@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Configuration;
 
 import com.textkernel.pdfconverter.uploader.core.properties.RabbitmqProperties;
 
+/**
+ * Configures RabbitMQ bindings
+ */
 @Configuration
 public class BindingConfiguration {
 

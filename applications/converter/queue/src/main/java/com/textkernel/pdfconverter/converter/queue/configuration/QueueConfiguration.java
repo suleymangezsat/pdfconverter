@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Configuration;
 
 import com.textkernel.pdfconverter.converter.core.properties.RabbitmqProperties;
 
+/**
+ * Configures RabbitMQ queues
+ */
 @Configuration
 public class QueueConfiguration {
 

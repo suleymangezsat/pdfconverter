@@ -17,11 +17,13 @@ import com.textkernel.pdfconverter.converter.core.dto.Convertable;
 import com.textkernel.pdfconverter.converter.core.dto.ConvertingResult;
 import com.textkernel.pdfconverter.converter.core.service.ConverterService;
 
+/**
+ * Service that is responsible from sending requests OCR API, handle error and convert to internal data model
+ */
 @Service
 public class OcrConverterService implements ConverterService {
 	private final RestTemplate restTemplate;
 	private final OcrProperties ocrProperties;
-	private static final String API_URL = "https://api.ocr.space/parse/image";
 	private static final String API_KEY_FIELD = "apiKey";
 	private static final String BASE64_IMAGE_FIELD = "base64Image";
 
@@ -30,6 +32,13 @@ public class OcrConverterService implements ConverterService {
 		this.ocrProperties = ocrProperties;
 	}
 
+	/**
+	 * Converts requested PDF file to plain text
+	 *
+	 * @param file
+	 * 		input file to be sent to OCR API
+	 * @return OCR service response that contains plain text
+	 */
 	@Override
 	public ConvertingResult convert(Convertable file) {
 		OcrParsingResponse response = fetchOcrApi(file);
@@ -44,9 +53,8 @@ public class OcrConverterService implements ConverterService {
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		body.add(BASE64_IMAGE_FIELD, FileUtil.generateBase64Content(file.getResource(), file.getContentType()));
 
-
 		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-		ResponseEntity<OcrParsingResponse> response = restTemplate.postForEntity(API_URL, requestEntity, OcrParsingResponse.class);
+		ResponseEntity<OcrParsingResponse> response = restTemplate.postForEntity(ocrProperties.getUrl(), requestEntity, OcrParsingResponse.class);
 		return response.getBody();
 	}
 }

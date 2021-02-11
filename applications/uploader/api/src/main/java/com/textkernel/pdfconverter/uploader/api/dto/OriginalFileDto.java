@@ -19,7 +19,7 @@ public class OriginalFileDto implements OriginalFile {
 	@JsonIgnore
 	private byte[] resource;
 
-	private long size;
+	private Long size;
 
 	private String contentType;
 }

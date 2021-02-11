@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Configuration;
 
 import com.textkernel.pdfconverter.uploader.core.properties.RabbitmqProperties;
 
+/**
+ * Configures RabbitMQ exchanges
+ */
 @Configuration
 public class ExchangeConfiguration {
 	@Bean

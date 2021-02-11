@@ -11,5 +11,6 @@ import lombok.Setter;
 @Configuration
 @ConfigurationProperties("ocr")
 public class OcrProperties {
+	private String url;
 	private String apikey;
 }

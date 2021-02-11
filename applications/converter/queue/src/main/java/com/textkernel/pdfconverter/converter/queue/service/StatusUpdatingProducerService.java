@@ -2,7 +2,6 @@ package com.textkernel.pdfconverter.converter.queue.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,26 +10,29 @@ import com.textkernel.pdfconverter.converter.core.properties.RabbitmqProperties;
 import com.textkernel.pdfconverter.converter.core.service.ProducerService;
 import com.textkernel.pdfconverter.converter.queue.dto.StatusUpdatingPayload;
 
+/**
+ * {@inheritDoc}
+ */
 @Service
 public class StatusUpdatingProducerService implements ProducerService {
 	private static final Logger logger = LoggerFactory.getLogger(StatusUpdatingProducerService.class);
 
 	private final RabbitmqProperties rabbitmqProperties;
 	private final RabbitTemplate rabbitTemplate;
-	private final DirectExchange directExchange;
 
-	public StatusUpdatingProducerService(RabbitmqProperties rabbitmqProperties, RabbitTemplate rabbitTemplate, DirectExchange directExchange) {
+	public StatusUpdatingProducerService(RabbitmqProperties rabbitmqProperties, RabbitTemplate rabbitTemplate) {
 		this.rabbitmqProperties = rabbitmqProperties;
 		this.rabbitTemplate = rabbitTemplate;
-		this.directExchange = directExchange;
 	}
 
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void sendToUpdatingStatusTask(Converted converted) {
 		StatusUpdatingPayload statusUpdatingQueuePayload = createPayload(converted);
 		logger.info("Sending message to status updating queue : " + converted.getId());
-		this.rabbitTemplate.convertAndSend(directExchange.getName(), rabbitmqProperties.getStatusUpdatingRouteName(), statusUpdatingQueuePayload);
+		this.rabbitTemplate.convertAndSend(rabbitmqProperties.getDirectExchangeName(), rabbitmqProperties.getStatusUpdatingRouteName(), statusUpdatingQueuePayload);
 	}
 
 

@@ -72,29 +72,29 @@ class FileUploadServiceTest {
 		MockMultipartFile file = new MockMultipartFile("file", "filename.pdf", MediaType.APPLICATION_PDF_VALUE, "some pdf".getBytes());
 
 		FileTask fileTask = mockFileTask();
-		when(fileStorageService.create(any(), eq(Status.INIT))).thenReturn(fileTask);
+		when(fileStorageService.create(any(), eq(Status.INIT))).thenReturn(List.of(fileTask));
 		doNothing().when(producerService).sendFileToConvertingQueue(anyString(), any(), anyString());
-		fileUploadService.upload(file);
+		fileUploadService.upload(List.of(file));
 
 		verify(producerService, Mockito.times(1)).sendFileToConvertingQueue(eq(ID), eq(RESOURCE), eq(MediaType.APPLICATION_PDF_VALUE));
 	}
 
 	@Test
-	void upload_FILE_BLANK_NAME_ERROR() {
+	void upload_FileBlankNameError() {
 		MultipartFile file = mock(MultipartFile.class);
 		when(file.getOriginalFilename()).thenReturn(null);
 		FileHandlingException exception = assertThrows(FileHandlingException.class,
-				() -> fileUploadService.upload(file));
+				() -> fileUploadService.upload(List.of(file)));
 		assertEquals(ErrorMessage.FILE_BLANK_NAME_ERROR, exception.getMessage());
 	}
 
 	@Test
-	void upload_FILE_RESOLVING_ERROR() throws IOException {
+	void upload_FileResolvingError() throws IOException {
 		MultipartFile file = mock(MultipartFile.class);
 		when(file.getOriginalFilename()).thenReturn("name");
 		when(file.getBytes()).thenThrow(new IOException("invalid file"));
 		FileHandlingException exception = assertThrows(FileHandlingException.class,
-				() -> fileUploadService.upload(file));
+				() -> fileUploadService.upload(List.of(file)));
 		assertEquals(ErrorMessage.FILE_RESOLVING_ERROR, exception.getMessage());
 	}
 

@@ -51,13 +51,13 @@ public class RabbitmqPropertiesImpl implements RabbitmqProperties {
 	@Getter
 	@Setter
 	public static class Exchange {
-		String direct;
+		private String direct;
 	}
 
 	@Getter
 	@Setter
 	public static class Task<T> {
-		T converting;
-		T statusUpdating;
+		private T converting;
+		private T statusUpdating;
 	}
 }

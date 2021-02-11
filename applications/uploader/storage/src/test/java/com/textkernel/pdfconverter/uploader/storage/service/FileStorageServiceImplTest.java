@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +21,7 @@ import org.springframework.context.annotation.Import;
 
 import com.textkernel.pdfconverter.uploader.core.constant.Status;
 import com.textkernel.pdfconverter.uploader.core.dto.FileTask;
+import com.textkernel.pdfconverter.uploader.core.dto.OriginalFile;
 import com.textkernel.pdfconverter.uploader.core.service.FileStorageService;
 import com.textkernel.pdfconverter.uploader.storage.configuration.ObjectMapperConfiguration;
 import com.textkernel.pdfconverter.uploader.storage.entity.FileTaskEntity;
@@ -55,10 +57,13 @@ class FileStorageServiceImplTest {
 	void create_Success() {
 		assertEquals(1, fileRepository.count());
 
-		FileTask fileTask = fileStorageService.create(null, Status.SUCCESS);
-		assertNotNull(fileTask.getId());
-		assertNull(fileTask.getMessage());
-		assertEquals(Status.SUCCESS, fileTask.getStatus());
+		List<OriginalFile> input = new ArrayList<>();
+		input.add(null);
+		List<FileTask> fileTasks = fileStorageService.create(input, Status.SUCCESS);
+		assertEquals(1, fileTasks.size());
+		assertNotNull(fileTasks.get(0).getId());
+		assertNull(fileTasks.get(0).getMessage());
+		assertEquals(Status.SUCCESS, fileTasks.get(0).getStatus());
 		assertEquals(2, fileRepository.count());
 	}
 

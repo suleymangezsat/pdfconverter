@@ -10,6 +10,9 @@ import com.textkernel.pdfconverter.uploader.core.properties.RabbitmqProperties;
 import com.textkernel.pdfconverter.uploader.core.service.ProducerService;
 import com.textkernel.pdfconverter.uploader.queue.dto.ConvertingPayload;
 
+/**
+ * {@inheritDoc}
+ */
 @Service
 public class ConvertingProducerService implements ProducerService {
 	private static final Logger logger = LoggerFactory.getLogger(ConvertingProducerService.class);
@@ -23,6 +26,9 @@ public class ConvertingProducerService implements ProducerService {
 		this.rabbitmqProperties = rabbitmqProperties;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void sendFileToConvertingQueue(String id, byte[] resource, String contentType) {
 		ConvertingPayload fileMessage = createPayload(id, resource, contentType);

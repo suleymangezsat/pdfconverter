@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Configuration;
 
 import com.textkernel.pdfconverter.uploader.core.properties.RabbitmqProperties;
 
+/**
+ * Configures RabbitMQ queues
+ */
 @Configuration
 public class QueueConfiguration {
 	private static final String DL_QUEUE_SUFFIX = ".dlx";
